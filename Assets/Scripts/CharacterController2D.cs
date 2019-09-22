@@ -9,8 +9,10 @@ public class CharacterController2D : MonoBehaviour
 	[Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;	// How much to smooth out the movement
 	[SerializeField] private bool m_AirControl = false;							// Whether or not a player can steer while jumping;
 	[SerializeField] private LayerMask m_WhatIsGround;                          // A mask determining what is ground to the character
+    [SerializeField] private LayerMask m_WhatIsPlatform;
+    [SerializeField] private LayerMask m_WhatIsLadders;
     [SerializeField] private Transform m_GroundCheck;							// A position marking where to check if the player is grounded.
-	[SerializeField] private Transform m_CeilingCheck;							// A position marking where to check for ceilings
+    [SerializeField] private Transform m_CeilingCheck;							// A position marking where to check for ceilings
 	[SerializeField] private Collider2D m_CrouchDisableCollider;				// A collider that will be disabled when crouching
 
 	const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
@@ -56,7 +58,7 @@ public class CharacterController2D : MonoBehaviour
 
 		// The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
 		// This can be done using layers instead but Sample Assets will not overwrite your project settings.
-		Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
+		Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround + m_WhatIsPlatform + m_WhatIsLadders);
 		for (int i = 0; i < colliders.Length; i++)
 		{
 			if (colliders[i].gameObject != gameObject)
@@ -69,13 +71,48 @@ public class CharacterController2D : MonoBehaviour
 	}
 
 
-	public void Move(float move, bool crouch, bool jump)
+	public void Move(float move, float moveV , bool jump)
 	{
+
         m_Animator.SetFloat("horizontalSpeed", Mathf.Abs(move));
         m_Animator.SetFloat("verticalSpeed", m_Rigidbody2D.velocity.y);
         m_Animator.SetBool("OnGround", m_Grounded);
 
-        
+        bool crouch = false;
+        bool climb = false;
+
+        if(moveV != 0)
+        {
+            if(Physics2D.OverlapCircle(m_CeilingCheck.position, k_CeilingRadius, m_WhatIsLadders) || Physics2D.OverlapCircle(m_GroundCheck.position, k_CeilingRadius, m_WhatIsLadders))
+            {
+                climb = true;
+                moveV *= 10f;
+
+            }
+            else
+            {
+                moveV = m_Rigidbody2D.velocity.y;
+            }
+
+        }
+        //else if(moveV < 0)
+        //{
+        //    if (Physics2D.OverlapCircle(m_GroundCheck.position, k_CeilingRadius, m_WhatIsLadders))
+        //    {
+        //        climb = true;
+        //        moveV *= 10f;
+        //    }
+        //}
+        else
+        {
+            moveV = m_Rigidbody2D.velocity.y;
+            
+        }
+
+        m_Animator.SetBool("Climb", climb);
+
+
+
 
         // If crouching, check to see if the character can stand up
         if (!crouch)
@@ -119,8 +156,10 @@ public class CharacterController2D : MonoBehaviour
 				}
 			}
 
+
+
 			// Move the character by finding the target velocity
-			Vector3 targetVelocity = new Vector2(move * 10f, m_Rigidbody2D.velocity.y);
+			Vector3 targetVelocity = new Vector2(move * 10f, moveV);
 			// And then smoothing it out and applying it to the character
 			m_Rigidbody2D.velocity = Vector3.SmoothDamp(m_Rigidbody2D.velocity, targetVelocity, ref m_Velocity, m_MovementSmoothing);
 
