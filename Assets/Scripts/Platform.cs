@@ -15,10 +15,10 @@ public class Platform : MonoBehaviour
     {
         if(Input.GetAxis("Vertical") < 0)
         {
-            platform.surfaceArc = 0;
+            //platform.surfaceArc = 0;
             if (Input.GetButtonDown("Jump"))
             {
-                //platform.surfaceArc = 0;
+                platform.surfaceArc = 0;
             }
         }
         else

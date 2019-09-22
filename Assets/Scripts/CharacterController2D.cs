@@ -17,7 +17,11 @@ public class CharacterController2D : MonoBehaviour
 
 	const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
 	private bool m_Grounded;            // Whether or not the player is grounded.
-	const float k_CeilingRadius = .1f; // Radius of the overlap circle to determine if the player can stand up
+    private bool m_Clinb;
+    private LayerMask GroundMask;
+
+
+    const float k_CeilingRadius = .1f; // Radius of the overlap circle to determine if the player can stand up
 	private Rigidbody2D m_Rigidbody2D;
     private Animator m_Animator;
 	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
@@ -56,13 +60,18 @@ public class CharacterController2D : MonoBehaviour
 		bool wasGrounded = m_Grounded;
 		m_Grounded = false;
 
-		// The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
-		// This can be done using layers instead but Sample Assets will not overwrite your project settings.
+        // The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
+        // This can be done using layers instead but Sample Assets will not overwrite your project settings.
+        GroundMask = 0;
 		Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround + m_WhatIsPlatform + m_WhatIsLadders);
 		for (int i = 0; i < colliders.Length; i++)
 		{
 			if (colliders[i].gameObject != gameObject)
 			{
+
+                GroundMask = colliders[i].gameObject.layer;
+
+
 				m_Grounded = true;
 				if (!wasGrounded)
 					OnLandEvent.Invoke();
@@ -81,38 +90,73 @@ public class CharacterController2D : MonoBehaviour
         bool crouch = false;
         bool climb = false;
 
-        if(moveV != 0)
+
+
+        if(m_Clinb)
         {
-            if(Physics2D.OverlapCircle(m_CeilingCheck.position, k_CeilingRadius, m_WhatIsLadders) || Physics2D.OverlapCircle(m_GroundCheck.position, k_CeilingRadius, m_WhatIsLadders))
+            if (Physics2D.OverlapCircle(m_CeilingCheck.position, k_CeilingRadius, m_WhatIsLadders) && Physics2D.OverlapCircle(m_GroundCheck.position, k_CeilingRadius, m_WhatIsLadders))
             {
-                climb = true;
-                moveV *= 10f;
+                m_Clinb = true;
 
             }
             else
             {
+                m_Clinb = false;
+            }
+        }
+        
+
+
+
+
+        if(moveV != 0)
+        {
+            if(Physics2D.OverlapCircle(m_CeilingCheck.position, k_CeilingRadius, m_WhatIsLadders) && moveV > 0 || Physics2D.OverlapCircle(m_GroundCheck.position, k_CeilingRadius, m_WhatIsLadders ) && moveV < 0)
+            {
+                m_Clinb = true;
+                climb = true;
+                moveV *= 10f;
+                
+            }
+            else if(moveV < 0)
+            {
+                crouch = true;
                 moveV = m_Rigidbody2D.velocity.y;
+            }
+            else
+            {
+
+               moveV = m_Rigidbody2D.velocity.y;
             }
 
         }
-        //else if(moveV < 0)
-        //{
-        //    if (Physics2D.OverlapCircle(m_GroundCheck.position, k_CeilingRadius, m_WhatIsLadders))
-        //    {
-        //        climb = true;
-        //        moveV *= 10f;
-        //    }
-        //}
         else
         {
-            moveV = m_Rigidbody2D.velocity.y;
+            if(!m_Clinb)
+            {
+                moveV = m_Rigidbody2D.velocity.y;
+            }
+            else
+            {
+                moveV = 0;
+            }
+
             
         }
 
-        m_Animator.SetBool("Climb", climb);
+        if(m_Clinb)
+        {
+            m_Rigidbody2D.bodyType = RigidbodyType2D.Kinematic;
+        }
+        else
+        {
+            m_Rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
+        }
 
+        m_Animator.SetBool("Climb", m_Clinb);
 
-
+        
+        
 
         // If crouching, check to see if the character can stand up
         if (!crouch)
@@ -176,8 +220,8 @@ public class CharacterController2D : MonoBehaviour
 				Flip();
 			}
 		}
-		// If the player should jump...
-		if (m_Grounded && jump)
+        // If the player should jump...
+        if (m_Grounded && jump && !(GroundMask == LayerMask.NameToLayer("Platform") && crouch))
 		{
 			// Add a vertical force to the player.
 			m_Grounded = false;
@@ -185,6 +229,9 @@ public class CharacterController2D : MonoBehaviour
 		}
         m_Animator.SetBool("Crouch", crouch);
     }
+
+
+
 
 
 	private void Flip()
