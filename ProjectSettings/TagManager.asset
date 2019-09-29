@@ -13,11 +13,11 @@ TagManager:
   - UI
   - 
   - 
-  - Payer
+  - Player
   - Ground
   - Ladders
   - Platform
-  - 
+  - Enemy
   - 
   - 
   - 
@@ -50,6 +50,12 @@ TagManager:
   - name: Object
     uniqueID: 1409814105
     locked: 0
+  - name: Enemis
+    uniqueID: 1907979539
+    locked: 0
   - name: Player
     uniqueID: 820721535
+    locked: 0
+  - name: Items
+    uniqueID: 644772879
     locked: 0

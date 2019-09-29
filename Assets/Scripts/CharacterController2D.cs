@@ -77,7 +77,9 @@ public class CharacterController2D : MonoBehaviour
 					OnLandEvent.Invoke();
 			}
 		}
-	}
+
+
+    }
 
 
 	public void Move(float move, float moveV , bool jump)
@@ -223,18 +225,28 @@ public class CharacterController2D : MonoBehaviour
         // If the player should jump...
         if (m_Grounded && jump && !(GroundMask == LayerMask.NameToLayer("Platform") && crouch))
 		{
-			// Add a vertical force to the player.
-			m_Grounded = false;
-			m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
-		}
+            // Add a vertical force to the player.
+            m_Grounded = false;
+            m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+        }
         m_Animator.SetBool("Crouch", crouch);
     }
 
 
+    public Vector3 PosGroundCheck()
+    {
+        return m_GroundCheck.position;
+    }
+
+    public void EnemyAddForse()
+    {
+        m_Grounded = false;
+        m_Rigidbody2D.velocity = new Vector2(0f,0f);
+        m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+    }
 
 
-
-	private void Flip()
+    private void Flip()
 	{
 		// Switch the way the player is labelled as facing.
 		m_FacingRight = !m_FacingRight;
