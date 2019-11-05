@@ -21,8 +21,26 @@ public class EnemyControler : MonoBehaviour
     {
         if (collision.transform.tag == "Player")
         {
-            collision.gameObject.GetComponent<CharacterController2D>();
-            Debug.Log("PaerHit");
+            List<ContactPoint2D> ContactPoints = new List<ContactPoint2D>();
+            collision.GetContacts(ContactPoints);
+
+            foreach(ContactPoint2D point in ContactPoints)
+            {
+                //Debug.Log(point.normal);
+                //Debug.DrawLine(point.point, point.point + point.normal,Color.red,10);
+                if (point.normal.y <= -0.8f)
+                {
+                    collision.gameObject.GetComponent<CharacterController2D>().EnemyAddForse();
+                    Hurt();
+
+                }
+                else
+                {
+                    Debug.Log("PlaerHit");
+                }
+            }
+
+            
 
         }
     }
@@ -31,14 +49,7 @@ public class EnemyControler : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Collider2D colliders = Physics2D.OverlapCircle(TopPoint.position, radius, WatIsPlayer);
 
-        if(colliders != null)
-        {
-            CharacterController2D Player = colliders.gameObject.GetComponent<CharacterController2D>();
-            Player.EnemyAddForse();
-            Hurt();
-        }
 
     }
 
