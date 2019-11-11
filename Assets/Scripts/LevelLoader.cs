@@ -24,6 +24,11 @@ public class LevelLoader : MonoBehaviour
         Time.timeScale = 1;
     }
 
+    public void AppClose()
+    {
+        Application.Quit();
+    }
+
     IEnumerator LoadAsynchronosly(int index)
     {
 
