@@ -11,12 +11,12 @@ public class PlayerMovement : MonoBehaviour
 
     private float horizontalMove = 0f;
     private float verticalMove = 0f;
-
+    private bool speedUp = false;
 
     private bool jump = false;
-    private bool crouch = false;
+    //private bool crouch = false;
 
-    private bool onGround = false;
+
 
     // Update is called once per frame
     void Update()
@@ -31,19 +31,34 @@ public class PlayerMovement : MonoBehaviour
         {
             jump = true;
         }
-        //if(Input.GetButtonDown("Crouch"))
-        //{
-        //    crouch = true;
-        //}
-        //if(Input.GetButtonUp("Crouch"))
-        //{
-        //    crouch = false;
-        //}
 
         
 
 
 
+    }
+
+
+    public void SpeedUpActive(float SpeadUpTime)
+    {
+        if(!speedUp)
+        {
+            StartCoroutine(SpeedUp(SpeadUpTime));
+        }
+    }
+
+    IEnumerator SpeedUp(float SpeadUpTime)
+    {
+        float defoltSpead = runSpeed;
+        runSpeed *= 2;
+        speedUp = true;
+        Time.timeScale = 0.5f;
+
+        yield return new WaitForSeconds(SpeadUpTime * 0.5f );
+
+        runSpeed = defoltSpead;
+        speedUp = false;
+        Time.timeScale = 1;
     }
 
 

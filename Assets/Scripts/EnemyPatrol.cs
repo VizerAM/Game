@@ -4,65 +4,39 @@ using UnityEngine;
 
 public class EnemyPatrol : MonoBehaviour
 {
-    public Transform PointA;
-    public Transform PointB;
-    public float speed;
+    public LayerMask enemyMask;
+    public float speed = 1;
+    Rigidbody2D myBody;
+    Transform myTrans;
+    float myWidth, myHeight;
 
-    private Rigidbody2D rb;
-    private Vector3 target;
-
-    private bool FacingRight;
-
-    private void Awake()
+    void Start()
     {
-        target = PointA.position;
-        rb = GetComponent<Rigidbody2D>();
-
-        if(transform.position.x - target.x > 0)
-        {
-            FacingRight = false;
-        }
+        
+        myTrans = this.transform;
+        myBody = this.GetComponent<Rigidbody2D>();
+        SpriteRenderer mySprite = this.GetComponent<SpriteRenderer>();
+        myWidth = mySprite.bounds.extents.x;
+        myHeight = mySprite.bounds.extents.y;
     }
 
-    private void Flip()
+    void FixedUpdate()
     {
-        // Switch the way the player is labelled as facing.
-        FacingRight = !FacingRight;
-
-        // Multiply the player's x local scale by -1.
-        Vector3 theScale = transform.localScale;
-        theScale.x *= -1;
-        transform.localScale = theScale;
-    }
-
-    private void FixedUpdate()
-    {
-        if( Vector3.Distance(new Vector3(transform.position.x,0), new Vector3(target.x,0)) < 0.1) 
+        Vector2 lineCastPos =  (Vector2)myTrans.position - (Vector2)myTrans.right * myWidth + Vector2.up * myHeight;
+        Debug.DrawLine(lineCastPos, lineCastPos + Vector2.down);
+        bool isGrounded = Physics2D.Linecast(lineCastPos, lineCastPos + Vector2.down, enemyMask);
+        Debug.DrawLine(lineCastPos, lineCastPos - (Vector2)myTrans.right * .05f);
+        bool isBlocked = Physics2D.Linecast(lineCastPos, lineCastPos - (Vector2)myTrans.right * .05f, enemyMask);
+        if ((!isGrounded && myBody.velocity.y == 0 )|| isBlocked)
         {
-            if(target == PointA.position)
-            {
-                target = PointB.position;
-            }
-            else
-            {
-                target = PointA.position;
-            }
-
-            Flip();
-
+            Vector3 currRot = myTrans.eulerAngles;
+            currRot.y += 180;
+            myTrans.eulerAngles = currRot;
         }
-        else
-        {
-            
-            if(FacingRight)
-            {
-                rb.velocity = new Vector2(speed * Time.fixedDeltaTime, rb.velocity.y);
-            }
-            else
-            {
-                rb.velocity = new Vector2(speed * Time.fixedDeltaTime * -1, rb.velocity.y);
-            }
-        }
+
+        Vector2 myVel = myBody.velocity;
+        myVel.x = -myTrans.right.x * speed;
+        myBody.velocity = myVel;
     }
 
 }

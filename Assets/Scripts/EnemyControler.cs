@@ -5,9 +5,6 @@ using UnityEngine;
 public class EnemyControler : MonoBehaviour
 {
     public GameObject DieEfect;
-    public Transform TopPoint;
-
-    public LayerMask WatIsPlayer;
 
     const float radius = .2f;
 
@@ -16,6 +13,8 @@ public class EnemyControler : MonoBehaviour
         Instantiate(DieEfect).transform.position = transform.position;
         Destroy(gameObject);
     }
+
+
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -26,17 +25,18 @@ public class EnemyControler : MonoBehaviour
 
             foreach(ContactPoint2D point in ContactPoints)
             {
-                //Debug.Log(point.normal);
-                //Debug.DrawLine(point.point, point.point + point.normal,Color.red,10);
-                if (point.normal.y <= -0.8f)
+
+                if (point.normal.y >= -0.5f)
                 {
-                    collision.gameObject.GetComponent<CharacterController2D>().EnemyAddForse();
-                    Hurt();
+                    
+                    collision.gameObject.GetComponent<Character>().Hurt();
+                    break;
 
                 }
                 else
                 {
-                    Debug.Log("PlaerHit");
+                    collision.gameObject.GetComponent<CharacterController2D>().Jump();
+                    Hurt();
                 }
             }
 

@@ -4,22 +4,15 @@ using UnityEngine;
 
 public class StarScrip : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public GameObject PickUpEfect;
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
-
-    public void OnTriggerEnter2D(Collider2D collision)
-    {
-        //GetComponent<Animator>().SetTrigger("PickUp");
+        if (collision.tag == "Player")
+        {
+            collision.GetComponent<Character>().PicUpStar();
+            if (PickUpEfect != null)
+                Instantiate(PickUpEfect).transform.position = transform.position;
+            Destroy(gameObject);
+        }
     }
 }

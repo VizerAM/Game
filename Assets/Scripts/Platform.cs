@@ -4,26 +4,26 @@ using UnityEngine;
 
 public class Platform : MonoBehaviour
 {
+
     private PlatformEffector2D platform;
-    public void Awake()
+    private LayerMask layerMask;
+
+    private void Start()
     {
         platform = GetComponent<PlatformEffector2D>();
+        layerMask = platform.colliderMask;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if(Input.GetAxis("Vertical") < 0)
         {
-            //platform.surfaceArc = 0;
-            if (Input.GetButtonDown("Jump"))
-            {
-                platform.surfaceArc = 0;
-            }
+            if(Input.GetButtonDown("Jump"))
+             platform.colliderMask -= LayerMask.GetMask("Player");
         }
         else
         {
-            platform.surfaceArc = 90;
+            platform.colliderMask = layerMask;
         }
     }
 }

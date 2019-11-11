@@ -5,10 +5,17 @@ using UnityEngine;
 public class Acorn : MonoBehaviour
 {
     public GameObject PickUpEfect;
+    public float DoobleJumpTime = 30;
+
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        Instantiate(PickUpEfect).transform.position = transform.position;
-        Destroy(gameObject);
+        if (collision.tag == "Player")
+        {
+            collision.GetComponent<PlayerMovement>().SpeedUpActive(DoobleJumpTime);
+            Instantiate(PickUpEfect).transform.position = transform.position;
+            Destroy(gameObject);
+        }
+
     }
 }
